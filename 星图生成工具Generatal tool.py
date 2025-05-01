@@ -2,8 +2,8 @@ from perlin_noise import PerlinNoise
 from PIL import Image,ImageColor,ImageDraw,ImageEnhance,ImageFilter
 import random,subprocess,time,math,os
 import numpy as np
-print("生成的行星颜值差不关我事QωQ（按Enter键开始生成）")
-#print("注:可能会出bug,但是概率低（按Enter键开始生成）")
+print("生成的行星颜值不好不关我事QωQ（按Enter键开始生成）")
+print("希望你能够生成到美丽的星图呦~爱你 \(≧▽≦)/")
 input()
 def rdnum(lt,rt):#方便随机Be convenient to generate randomly
     return random.randint(lt,rt)
@@ -29,6 +29,7 @@ colorhx = rdnum(0,13)#恒星颜色选择Choosing the color of fixed star
 shadow_direction = rdnum(0,360)#影子朝向The direction of shadow
 ishx = random.choice([True,False])#是否有恒星（阴影是否朝向我们）Is fixed star there(Is shadow towards to us)
 l = random.randint(0,1024-size)#阴影部分的凹凸程度The degree of convex and concave in the part of shadow
+color = (rdnum(0,255),rdnum(0,255),rdnum(0,255),255)
 def shadow():#影子部分The part of shadow
     shd = ImageDraw.Draw(Project_image_shadow)
     shd.ellipse((size*0.97,size*0.97,2048-size*0.97,2048-size*0.97),fill=(0,0,0,255))
@@ -40,13 +41,11 @@ def shadow():#影子部分The part of shadow
     return Project_image_shadow
 def sphere(tp,img,size,canvassize=2048):#1为行星，0为恒星 If tp equals to one,then tp is planet,if tp equals to zero,then tp is fixed star
     sph = ImageDraw.Draw(img)
-    if tp == 1:
-        color = (rdnum(0,255),rdnum(0,255),rdnum(0,255),255)
-    elif tp == 2:
+    if tp == 2:
         color = hx_color_bright[colorhx]
     else:
         color = hx_color[colorhx]
-    sph.ellipse((size,size,canvassize-size,canvassize-size),fill=color)
+    sph.ellipse((size,size,canvassize-size,canvassize-size),fill=(color[0],color[1],color[2],230))
     return img
 def light_line(img,blur,size=0,canvassize=4096):
     ltle = ImageDraw.Draw(img)
@@ -191,7 +190,7 @@ for i in range(21):
 blurred = hxf.filter(ImageFilter.GaussianBlur(2))
 Project_hximg.paste(hxsurf, (hxsize,hxsize), hxsurf)
 Project_hxend = ImageEnhance.Brightness(Project_hximg).enhance(rdnum(10,30)/10)
-light_0 = sphere(2,Image.new(mode="RGBA",size=(4096,4096),color=(0,0,0,0)),1708,canvassize=4096).filter(ImageFilter.BoxBlur(200))
+light_0 = sphere(2,Image.new(mode="RGBA",size=(4096,4096),color=(0,0,0,0)),1588,canvassize=4096).filter(ImageFilter.BoxBlur(200))
 light_1 = light_line(Image.new(mode="RGBA",size=(4096,4096),color=(0,0,0,0)),10,100).rotate(rdnum(30,150))
 light_2 = light_line(Image.new(mode="RGBA",size=(4096,4096)),15)
 light_1.paste(light_0,(0,0),light_0)
@@ -206,6 +205,10 @@ geography = apply_circular_mask(fisheye_effect(colorize_by_gray(apply_circular_m
 shadow_rotate = shadow().rotate(shadow_direction)
 shadow_filter = shadow_rotate.filter(ImageFilter.GaussianBlur(radius=25*size/1024))
 sphere_filter = sphere(1,Project_image_Sphere,1.05*size).filter(ImageFilter.GaussianBlur(radius=30*size/1024))
+Atmo = sphere(1,Image.new(mode="RGBA",size=(2048,2048)),0.985*size,2048)
+CAtmo = ImageDraw.Draw(Atmo)
+CAtmo.ellipse((1.01*size,1.01*size,2048-1.01*size,2048-1.01*size),fill=(color[0],color[1],color[2],200))
+Atmosphere = ImageEnhance.Brightness(Atmo.filter(ImageFilter.GaussianBlur(radius=30*size/1024))).enhance(10)
 Background_filter = star().filter(ImageFilter.GaussianBlur(1))
 Project_image = Image.new('RGB',(2048,2048),'black')
 if not ishx:
@@ -222,8 +225,11 @@ Project_image.paste(tring,(0,0),tring)
 for _ in range(rdnum(0,15)):
     Project_image.paste(sphere_filter,(0,0),sphere_filter)
 Project_image.paste(geography,(size,size),geography)
+Project_image.paste(Atmosphere,(0,0),Atmosphere)
 Project_image.paste(ImageEnhance.Brightness(shadow_filter).enhance(0),(0,0),ImageEnhance.Brightness(shadow_filter).enhance(0))
 Project_image.paste(tring.rotate(180),(0,0),tring.rotate(180))
+for _ in range(2):
+    Project_image = Project_image.filter(ImageFilter.SHARPEN)
 Project_image.show()
 if not os.path.exists("Star_Photos"):
     os.mkdir("Star_Photos")
@@ -235,7 +241,6 @@ while True:
     else:
         Project_image.save(f"Star_Photo{Num_of_photo}.png")
         break
-print("星图生成完毕！（按Enter键退出程序）")
+print("星图生成完毕！我虚了(´• ω •`)ﾉ（按Enter键退出程序）")
+print("作者:Maugfy；部分代码提供：deepseek")
 input()
-#程序作者：Maugfy
-#代码提供：deepseek
